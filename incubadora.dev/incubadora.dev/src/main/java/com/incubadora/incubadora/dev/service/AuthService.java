@@ -14,9 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/*
-*
-* */
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -28,7 +27,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     // Inyección de dependencias por constructor
-    public AuthService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public AuthService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+                       JwtService jwtService, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -60,30 +60,33 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // 4. Generar y devolver el token
-        // Para UserDetails, Spring Security necesita una implementación. Por ahora, creamos una simple.
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getUsername())
-                .password(user.getPasswordHash()) // Spring no lo usa aquí, pero es buena práctica ponerlo
-                .authorities("ROLE_" + user.getRole().getName()) // ej. "ROLE_Desarrollador"
-                .build();
+       // También añadimos el rol al token durante el registro para un inicio de sesión inmediato
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", user.getRole().getName());
 
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(extraClaims, user); // Pasamos user directamente
         return new AuthResponse(token);
     }
 
     public AuthResponse login(LoginRequest request) {
-        // 1. Autenticar al usuario con Spring Security
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
-        // 2. Si la autenticación es exitosa, buscar el usuario para generar el token
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
 
-        // 3. Generar y devolver el token
-        String token = jwtService.generateToken(user.toUserDetails()); // Necesitamos un método en User para convertir a UserDetails
+        // *** INICIO DEL CAMBIO IMPORTANTE ***
+        // 1. Crear un mapa para las reclamaciones extra
+        Map<String, Object> extraClaims = new HashMap<>();
+
+        // 2. Añadir el rol del usuario al mapa
+        extraClaims.put("role", user.getRole().getName());
+
+        // 3. Generar el token pasando el mapa de reclamaciones extra
+        String token = jwtService.generateToken(extraClaims, user); // Pasamos user directamente
+        // *** FIN DEL CAMBIO IMPORTANTE ***
+
         return new AuthResponse(token);
     }
 }

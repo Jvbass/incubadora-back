@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUsername(@Param("username") String username);
 
     /**
-     * Verifica si ya existe un usuario con el nombre de usuario proporcionado.
+     * Verifica si ya existe un usuario con el nombre de usuario recibido.
      * Es útil para la validación durante el registro para evitar duplicados.
      * @param username El nombre de usuario a verificar.
      * @return true si el usuario existe, false en caso contrario.

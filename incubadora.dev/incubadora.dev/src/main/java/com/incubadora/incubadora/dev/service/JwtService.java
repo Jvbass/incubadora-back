@@ -41,13 +41,16 @@ public class JwtService {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
+    /*
+    *  Armamos el token
+    * */
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
         return Jwts.builder()
-                .claims(extraClaims) // .setClaims() está obsoleto
-                .subject(userDetails.getUsername()) // .setSubject() está obsoleto
-                .issuedAt(new Date(System.currentTimeMillis())) // .setIssuedAt() está obsoleto
-                .expiration(new Date(System.currentTimeMillis() + expiration)) // .setExpiration() está obsoleto
-                .signWith(getSignInKey()) // Se mantiene signWith para firmar
+                .claims(extraClaims) // usamos .claims() para incluir los extras
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignInKey()) // signWith para firmar
                 .compact();
     }
 

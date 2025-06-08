@@ -56,5 +56,7 @@ public class DashboardController {
         // 3. Devolver el DTO en la respuesta
         return ResponseEntity.ok(responseDto);
     }
+
+
 }
 
