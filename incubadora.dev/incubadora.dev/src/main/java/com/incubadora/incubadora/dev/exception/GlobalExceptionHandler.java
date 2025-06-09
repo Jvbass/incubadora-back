@@ -7,9 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -51,15 +57,22 @@ public class GlobalExceptionHandler {
     }
 
     // Manejador genérico para otras excepciones no controladas (500 Internal Server Error)
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception ex, WebRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
-                "Ocurrió un error inesperado: " + ex.getMessage(),
-                request.getDescription(false).replace("uri=", "")
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // Devolveremos un código de estado 400
+    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        // Iteramos sobre todos los errores de campo encontrados
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            // Obtenemos el nombre del campo que falló
+            String fieldName = ((FieldError) error).getField();
+            // Obtenemos el mensaje de error que definimos en el DTO
+            String errorMessage = error.getDefaultMessage();
+            // Lo añadimos a nuestro mapa de errores
+            errors.put(fieldName, errorMessage);
+        });
+
+        return errors;
     }
 
     // Manejador para acceso denegado por roles/permisos (403 Forbidden)
@@ -73,4 +86,5 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
+
 }
