@@ -5,6 +5,7 @@ import com.incubadora.incubadora.dev.entity.common.Tool;
 import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.entity.feedback.FeedbackProject;
 import jakarta.persistence.*;
+
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Objects;
@@ -35,6 +36,7 @@ public class Project {
     @Column(name = "project_url", length = 255)
     private String projectUrl;
 
+
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     @Temporal(TemporalType.TIMESTAMP)
     private Timestamp createdAt;
@@ -43,7 +45,14 @@ public class Project {
     @Temporal(TemporalType.TIMESTAMP)
     private Timestamp updatedAt;
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @Column(name = "project_status", length = 15, columnDefinition = "VARCHAR(50) DEFAULT 'pending'")
+    private String status; // 'pending', 'published', 'archived'
+
+
+    @Column(name = "is_collaborative", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isCollaborative = false;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "Project_Technologies",
             joinColumns = @JoinColumn(name = "project_id"),
@@ -51,7 +60,7 @@ public class Project {
     )
     private Set<Technology> technologies = new HashSet<>();
 
-    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "Project_Tools",
             joinColumns = @JoinColumn(name = "project_id"),
@@ -89,6 +98,14 @@ public class Project {
         this.developer = developer;
     }
 
+    public void setIsCollaborative(boolean isCollaborative) {
+        this.isCollaborative = isCollaborative;
+    }
+
+    public boolean getIsCollaborative() {
+        return isCollaborative;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -107,6 +124,15 @@ public class Project {
 
     public String getRepositoryUrl() {
         return repositoryUrl;
+    }
+
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public void setRepositoryUrl(String repositoryUrl) {
@@ -160,6 +186,7 @@ public class Project {
     public void setFeedbacks(Set<FeedbackProject> feedbacks) {
         this.feedbacks = feedbacks;
     }
+
 
     // Métodos helper para manejar relaciones ManyToMany
     public void addTechnology(Technology technology) {

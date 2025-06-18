@@ -2,8 +2,10 @@ package com.incubadora.incubadora.dev.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.URL;
+
 import java.util.List;
 
 /**
@@ -30,17 +32,75 @@ public class CreateProjectRequestDto {
     @NotEmpty(message = "Debes especificar al menos una herramienta.")
     private List<Integer> toolIds; // Lista de IDs de las herramientas usadas
 
+    @NotBlank(message = "El estado del proyecto no puede estar vacío.")
+    @Pattern(regexp = "pending|published|archived") // Validación simple para el estado del proyecto
+    private String status;
+
+    @NotBlank(message = "Debes especificar si el proyecto es colaborativo o no.")
+    private boolean isCollaborative;
+
     // Getters y Setters
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getRepositoryUrl() { return repositoryUrl; }
-    public void setRepositoryUrl(String repositoryUrl) { this.repositoryUrl = repositoryUrl; }
-    public String getProjectUrl() { return projectUrl; }
-    public void setProjectUrl(String projectUrl) { this.projectUrl = projectUrl; }
-    public List<Integer> getTechnologyIds() { return technologyIds; }
-    public void setTechnologyIds(List<Integer> technologyIds) { this.technologyIds = technologyIds; }
-    public List<Integer> getToolIds() { return toolIds; }
-    public void setToolIds(List<Integer> toolIds) { this.toolIds = toolIds; }
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getRepositoryUrl() {
+        return repositoryUrl;
+    }
+
+    public void setRepositoryUrl(String repositoryUrl) {
+        this.repositoryUrl = repositoryUrl;
+    }
+
+    public String getProjectUrl() {
+        return projectUrl;
+    }
+
+    public void setProjectUrl(String projectUrl) {
+        this.projectUrl = projectUrl;
+    }
+
+    public List<Integer> getTechnologyIds() {
+        return technologyIds;
+    }
+
+    public void setTechnologyIds(List<Integer> technologyIds) {
+        this.technologyIds = technologyIds;
+    }
+
+    public List<Integer> getToolIds() {
+        return toolIds;
+    }
+
+    public void setToolIds(List<Integer> toolIds) {
+        this.toolIds = toolIds;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isCollaborative() {
+        return isCollaborative;
+    }
+
+    public void setCollaborative(boolean collaborative) {
+        isCollaborative = collaborative;
+    }
 }
