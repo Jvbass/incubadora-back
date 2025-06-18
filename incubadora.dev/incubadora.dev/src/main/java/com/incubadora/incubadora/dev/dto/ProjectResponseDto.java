@@ -20,6 +20,7 @@ public class ProjectResponseDto {
     private Set<ToolDto> tools;
     private String status;
     private Boolean isCollaborative;
+    private Byte developmentProgress;
 
 
     // Getters y Setters
@@ -109,5 +110,13 @@ public class ProjectResponseDto {
 
     public void setIsCollaborative(Boolean isCollaborative) {
         this.isCollaborative = isCollaborative;
+    }
+
+    public Byte getDevelopmentProgress() {
+        return developmentProgress;
+    }
+
+    public void setDevelopmentProgress(Byte developmentProgress) {
+        this.developmentProgress = developmentProgress;
     }
 }

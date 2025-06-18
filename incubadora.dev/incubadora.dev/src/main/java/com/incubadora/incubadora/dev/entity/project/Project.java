@@ -5,6 +5,8 @@ import com.incubadora.incubadora.dev.entity.common.Tool;
 import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.entity.feedback.FeedbackProject;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -23,17 +25,17 @@ public class Project {
     @JoinColumn(name = "developer_id", nullable = false)
     private User developer;
 
-    @Column(name = "title", length = 255, nullable = false)
+    @Column(name = "title", length = 100, nullable = false)
     private String title;
 
     @Lob // Para campos de texto largos
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "repository_url", length = 255)
+    @Column(name = "repository_url", length = 100)
     private String repositoryUrl;
 
-    @Column(name = "project_url", length = 255)
+    @Column(name = "project_url", length = 100)
     private String projectUrl;
 
 
@@ -48,9 +50,13 @@ public class Project {
     @Column(name = "project_status", length = 15, columnDefinition = "VARCHAR(50) DEFAULT 'pending'")
     private String status; // 'pending', 'published', 'archived'
 
-
     @Column(name = "is_collaborative", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isCollaborative = false;
+
+    @Min(value = 0, message = "El progreso del desarrollo no puede ser menor a 0")
+    @Max(value = 100, message = "El progreso del desarrollo no puede ser mayor a 100")
+    @Column(name = "development_progress", columnDefinition = "TINYINT DEFAULT 100")
+    private Byte developmentProgress = 100;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -98,13 +104,6 @@ public class Project {
         this.developer = developer;
     }
 
-    public void setIsCollaborative(boolean isCollaborative) {
-        this.isCollaborative = isCollaborative;
-    }
-
-    public boolean getIsCollaborative() {
-        return isCollaborative;
-    }
 
     public String getTitle() {
         return title;
@@ -133,6 +132,22 @@ public class Project {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setIsCollaborative(boolean isCollaborative) {
+        this.isCollaborative = isCollaborative;
+    }
+
+    public boolean getIsCollaborative() {
+        return isCollaborative;
+    }
+
+    public Byte getDevelopmentProgress() {
+        return developmentProgress;
+    }
+
+    public void setDevelopmentProgress(Byte developmentProgress) {
+        this.developmentProgress = developmentProgress;
     }
 
     public void setRepositoryUrl(String repositoryUrl) {

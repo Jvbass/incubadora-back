@@ -1,9 +1,7 @@
 package com.incubadora.incubadora.dev.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.URL;
 
 import java.util.List;
@@ -33,11 +31,14 @@ public class CreateProjectRequestDto {
     private List<Integer> toolIds; // Lista de IDs de las herramientas usadas
 
     @NotBlank(message = "El estado del proyecto no puede estar vacío.")
-    @Pattern(regexp = "pending|published|archived") // Validación simple para el estado del proyecto
+    @Pattern(regexp = "pending|published|archived")
     private String status;
 
-    @NotBlank(message = "Debes especificar si el proyecto es colaborativo o no.")
     private boolean isCollaborative;
+
+    @Min(value = 0, message = "El progreso del desarrollo no puede ser menor a 0")
+    @Max(value = 100, message = "El progreso del desarrollo no puede ser mayor a 100")
+    private Byte developmentProgress;
 
     // Getters y Setters
     public String getTitle() {
@@ -96,11 +97,19 @@ public class CreateProjectRequestDto {
         this.status = status;
     }
 
-    public boolean isCollaborative() {
+    public boolean getIsCollaborative() {
         return isCollaborative;
     }
 
-    public void setCollaborative(boolean collaborative) {
-        isCollaborative = collaborative;
+    public void setIsCollaborative(boolean isCollaborative) {
+        this.isCollaborative = isCollaborative;
+    }
+
+    public Byte getDevelopmentProgress() {
+        return developmentProgress;
+    }
+
+    public void setDevelopmentProgress(Byte developmentProgress) {
+        this.developmentProgress = developmentProgress;
     }
 }

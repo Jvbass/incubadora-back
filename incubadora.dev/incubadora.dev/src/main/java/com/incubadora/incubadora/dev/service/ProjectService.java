@@ -69,6 +69,8 @@ public class ProjectService {
         newProject.setRepositoryUrl(request.getRepositoryUrl());
         newProject.setProjectUrl(request.getProjectUrl());
         newProject.setStatus(request.getStatus());
+        newProject.setIsCollaborative(request.getIsCollaborative());
+        newProject.setDevelopmentProgress(request.getDevelopmentProgress());
 
 
         // 4. Asignar las tecnologías y herramientas.
@@ -131,6 +133,7 @@ public class ProjectService {
         dto.setDeveloperUsername(project.getDeveloper().getUsername());
         dto.setStatus(project.getStatus());
         dto.setIsCollaborative(project.getIsCollaborative());
+        dto.setDevelopmentProgress(project.getDevelopmentProgress());
 
         dto.setTechnologies(project.getTechnologies().stream()
                 .map(tech -> new TechnologyDto(tech.getId(), tech.getName()))
