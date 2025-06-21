@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
 )
 @SecurityScheme(
         name = "bearerAuth", // Un nombre para referenciar este esquema. Debe coincidir con el de SecurityRequirement.
-        description = "Token JWT para autorización. Ingresa **'Bearer' [espacio] y luego tu token.**",
+        description = "Token JWT para autorización. Ingresa aca tu token recibido en la respuesta del login.**",
         scheme = "bearer",
         type = SecuritySchemeType.HTTP, // El tipo de esquema es HTTP.
         bearerFormat = "JWT", // El formato del token es JWT.

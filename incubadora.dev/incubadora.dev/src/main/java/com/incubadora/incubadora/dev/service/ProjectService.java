@@ -85,7 +85,7 @@ public class ProjectService {
     }
 
 
-    // Obtener todos los proyectos (resumen) ---
+    // Obtener todos los proyectos ---
     @Transactional(readOnly = true)
     public List<ProjectSummaryDto> getAllProjects() {
         return projectRepository.findAll().stream()
@@ -109,6 +109,9 @@ public class ProjectService {
         dto.setTitle(project.getTitle());
         dto.setDeveloperUsername(project.getDeveloper().getUsername());
         dto.setCreatedAt(project.getCreatedAt());
+        dto.setStatus(project.getStatus());
+        dto.setIsCollaborative(project.getIsCollaborative());
+        dto.setDevelopmentProgress(project.getDevelopmentProgress());
 
         dto.setTechnologyNames(project.getTechnologies().stream()
                 .map(Technology::getName)
