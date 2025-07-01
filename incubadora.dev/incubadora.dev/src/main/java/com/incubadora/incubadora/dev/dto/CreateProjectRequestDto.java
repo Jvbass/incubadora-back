@@ -16,6 +16,7 @@ public class CreateProjectRequestDto {
     private String title;
 
     @NotBlank(message = "La descripción no puede estar vacía.")
+    @Size(max = 500, message = "La descripcion no puede exceder los 500 caracteres.")
     private String description;
 
     @URL(message = "El enlace al repositorio debe ser una URL válida.")
@@ -27,14 +28,13 @@ public class CreateProjectRequestDto {
     @NotEmpty(message = "Debes especificar al menos una tecnología.")
     private List<Integer> technologyIds; // Lista de IDs de las tecnologías usadas
 
-    @NotEmpty(message = "Debes especificar al menos una herramienta.")
-    private List<Integer> toolIds; // Lista de IDs de las herramientas usadas
-
     @NotBlank(message = "El estado del proyecto no puede estar vacío.")
     @Pattern(regexp = "pending|published|archived")
     private String status;
 
     private boolean isCollaborative;
+
+    private boolean needMentoring = false;
 
     @Min(value = 0, message = "El progreso del desarrollo no puede ser menor a 0")
     @Max(value = 100, message = "El progreso del desarrollo no puede ser mayor a 100")
@@ -81,14 +81,6 @@ public class CreateProjectRequestDto {
         this.technologyIds = technologyIds;
     }
 
-    public List<Integer> getToolIds() {
-        return toolIds;
-    }
-
-    public void setToolIds(List<Integer> toolIds) {
-        this.toolIds = toolIds;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -111,5 +103,13 @@ public class CreateProjectRequestDto {
 
     public void setDevelopmentProgress(Byte developmentProgress) {
         this.developmentProgress = developmentProgress;
+    }
+
+    public boolean getNeedMentoring() {
+        return needMentoring;
+    }
+
+    public void setNeedMentoring(boolean needMentoring) {
+        this.needMentoring = needMentoring;
     }
 }

@@ -17,9 +17,9 @@ public class ProjectResponseDto {
     private Timestamp createdAt;
     private String developerUsername;
     private Set<TechnologyDto> technologies;
-    private Set<ToolDto> tools;
     private String status;
     private Boolean isCollaborative;
+    private Boolean needMentoring = false;
     private Byte developmentProgress;
 
 
@@ -88,14 +88,6 @@ public class ProjectResponseDto {
         this.technologies = technologies;
     }
 
-    public Set<ToolDto> getTools() {
-        return tools;
-    }
-
-    public void setTools(Set<ToolDto> tools) {
-        this.tools = tools;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -118,5 +110,13 @@ public class ProjectResponseDto {
 
     public void setDevelopmentProgress(Byte developmentProgress) {
         this.developmentProgress = developmentProgress;
+    }
+
+    public Boolean getNeedMentoring() {
+        return needMentoring;
+    }
+
+    public void setNeedMentoring(Boolean needMentoring) {
+        this.needMentoring = needMentoring;
     }
 }

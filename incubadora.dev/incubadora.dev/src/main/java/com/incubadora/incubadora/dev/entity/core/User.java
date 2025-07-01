@@ -10,6 +10,8 @@ import com.incubadora.incubadora.dev.entity.project.Project;
 import com.incubadora.incubadora.dev.entity.project.TeamMember;
 import com.incubadora.incubadora.dev.entity.project.TeamProject;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,11 +43,11 @@ public class User implements UserDetails {
     private String lastName;
 
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
     private Timestamp createdAt;
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
     private Timestamp updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

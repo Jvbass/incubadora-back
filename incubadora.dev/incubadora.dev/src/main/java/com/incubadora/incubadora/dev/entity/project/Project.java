@@ -1,12 +1,13 @@
 package com.incubadora.incubadora.dev.entity.project;
 
 import com.incubadora.incubadora.dev.entity.common.Technology;
-import com.incubadora.incubadora.dev.entity.common.Tool;
 import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.entity.feedback.FeedbackProject;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -28,7 +29,7 @@ public class Project {
     @Column(name = "title", length = 100, nullable = false)
     private String title;
 
-    @Lob // Para campos de texto largos
+    @Lob
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
@@ -38,13 +39,12 @@ public class Project {
     @Column(name = "project_url", length = 100)
     private String projectUrl;
 
-
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
     private Timestamp createdAt;
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
     private Timestamp updatedAt;
 
     @Column(name = "project_status", length = 15, columnDefinition = "VARCHAR(50) DEFAULT 'pending'")
@@ -52,6 +52,9 @@ public class Project {
 
     @Column(name = "is_collaborative", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isCollaborative = false;
+
+    @Column(name = "need_mentoring", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean needMentoring = false;
 
     @Min(value = 0, message = "El progreso del desarrollo no puede ser menor a 0")
     @Max(value = 100, message = "El progreso del desarrollo no puede ser mayor a 100")
@@ -65,14 +68,6 @@ public class Project {
             inverseJoinColumns = @JoinColumn(name = "technology_id")
     )
     private Set<Technology> technologies = new HashSet<>();
-
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "Project_Tools",
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "tool_id")
-    )
-    private Set<Tool> tools = new HashSet<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FeedbackProject> feedbacks = new HashSet<>();
@@ -186,13 +181,6 @@ public class Project {
         this.technologies = technologies;
     }
 
-    public Set<Tool> getTools() {
-        return tools;
-    }
-
-    public void setTools(Set<Tool> tools) {
-        this.tools = tools;
-    }
 
     public Set<FeedbackProject> getFeedbacks() {
         return feedbacks;
@@ -213,17 +201,6 @@ public class Project {
         this.technologies.remove(technology);
         technology.getProjects().remove(this);
     }
-
-    public void addTool(Tool tool) {
-        this.tools.add(tool);
-        tool.getProjects().add(this);
-    }
-
-    public void removeTool(Tool tool) {
-        this.tools.remove(tool);
-        tool.getProjects().remove(this);
-    }
-
 
     // equals, hashCode, toString
     @Override
@@ -246,5 +223,13 @@ public class Project {
                 ", title='" + title + '\'' +
                 ", developer=" + (developer != null ? developer.getUsername() : null) +
                 '}';
+    }
+
+    public boolean getNeedMentoring() {
+        return needMentoring;
+    }
+
+    public void setNeedMentoring(boolean needMentoring) {
+        this.needMentoring = needMentoring;
     }
 }

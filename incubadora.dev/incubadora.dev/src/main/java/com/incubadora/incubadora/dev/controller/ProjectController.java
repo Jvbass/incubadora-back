@@ -66,7 +66,7 @@ public class ProjectController {
     //  obtener el detalle de un proyecto ---/api/projects/{id}
     @Operation(
             summary = "Obtiene los detalles completos de un proyecto por su ID",
-            description = "Accesible por cualquier usuario autenticado. Ideal para la vista de detalle del proyecto.",
+            description = "Accesible por cualquier usuario autenticado.",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")

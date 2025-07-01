@@ -13,8 +13,8 @@ public class ProjectSummaryDto {
     private String developerUsername;
     private Timestamp createdAt;
     private Set<String> technologyNames; // Solo los nombres para la vista de lista
-    private Set<String> toolNames;       // Solo los nombres para la vista de lista
     private boolean isCollaborative;
+    private boolean needMentoring = false; // Indica si el proyecto necesita mentoría
     private String status;
     private Byte developmentProgress;
 
@@ -60,14 +60,6 @@ public class ProjectSummaryDto {
         this.technologyNames = technologyNames;
     }
 
-    public Set<String> getToolNames() {
-        return toolNames;
-    }
-
-    public void setToolNames(Set<String> toolNames) {
-        this.toolNames = toolNames;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -91,5 +83,13 @@ public class ProjectSummaryDto {
     public void setDevelopmentProgress(Byte developmentProgress) {
         this.developmentProgress = developmentProgress;
 
+    }
+
+    public boolean getNeedMentoring() {
+        return needMentoring;
+    }
+
+    public void setNeedMentoring(boolean needMentoring) {
+        this.needMentoring = needMentoring;
     }
 }

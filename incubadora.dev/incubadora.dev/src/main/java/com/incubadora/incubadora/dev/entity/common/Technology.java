@@ -20,6 +20,9 @@ public class Technology {
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private String name;
 
+    @Column(name = "tech_color", length = 7, nullable = false, unique = true)
+    private String techColor;
+
     @ManyToMany(mappedBy = "technologies")
     private Set<Project> projects = new HashSet<>(); // No se usa en la base de datos, pero se puede usar para mostrar los proyectos de una tecnología.
 
@@ -54,6 +57,14 @@ public class Technology {
         this.name = name;
     }
 
+    public String getTechColor() {
+        return techColor;
+    }
+
+    public void setTechColor(String techColor) {
+        this.techColor = techColor;
+    }
+
     public Set<Project> getProjects() {
         return projects;
     }
@@ -78,6 +89,7 @@ public class Technology {
         this.jobOffers = jobOffers;
     }
 
+
     // equals, hashCode, toString
     @Override
     public boolean equals(Object o) {
@@ -99,4 +111,6 @@ public class Technology {
                 ", name='" + name + '\'' +
                 '}';
     }
+
+
 }
