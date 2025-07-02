@@ -29,5 +29,25 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
     @Override
     @EntityGraph(attributePaths = {"developer", "technologies"})
     Optional<Project> findById(Integer id);
+
+    /**
+     * Busca todos los proyectos que pertenecen a un desarrollador específico,
+     * identificado por su nombre de usuario. Carga las tecnologías de forma
+     * anticipada para un rendimiento óptimo.
+     * @param username El nombre de usuario del desarrollador.
+     * @return Una lista de proyectos del usuario.
+     */
+    @EntityGraph(attributePaths = {"developer", "technologies"})
+    List<Project> findByDeveloper_Username(String username);
+
+    /**
+     * Busca todos los proyectos que pertenecen a un desarrollador específico,
+     * identificado por su ID numérico. Carga las tecnologías de forma
+     * anticipada para un rendimiento óptimo.
+     * @param developerId El ID del desarrollador.
+     * @return Una lista de proyectos del usuario.
+     */
+    @EntityGraph(attributePaths = {"developer", "technologies"})
+    List<Project> findByDeveloper_Id(Integer developerId);
 }
 

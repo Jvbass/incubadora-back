@@ -26,7 +26,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    // Inyección de dependencias por constructor
+    // Inyección de dependencias
     public AuthService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
                        JwtService jwtService, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
@@ -36,6 +36,9 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
+
+
+    /*Registro */
     public AuthResponse register(RegisterRequest request) {
         // 1. Validar si el usuario o email ya existen y lanzar nuestra excepción personalizada
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -63,11 +66,14 @@ public class AuthService {
        // También añadimos el rol al token durante el registro para un inicio de sesión inmediato
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole().getName());
+        extraClaims.put("userId", user.getId()); // Añadimos el ID del usuario para futuras referencias"
 
         String token = jwtService.generateToken(extraClaims, user); // Pasamos user directamente
         return new AuthResponse(token);
     }
 
+
+/*Login */
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
@@ -76,16 +82,12 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
 
-        // *** INICIO DEL CAMBIO IMPORTANTE ***
-        // 1. Crear un mapa para las reclamaciones extra
+        // Creamos las claims personalizadas para el token
         Map<String, Object> extraClaims = new HashMap<>();
-
-        // 2. Añadir el rol del usuario al mapa
         extraClaims.put("role", user.getRole().getName());
+        extraClaims.put("userId", user.getId());
 
-        // 3. Generar el token pasando el mapa de reclamaciones extra
-        String token = jwtService.generateToken(extraClaims, user); // Pasamos user directamente
-        // *** FIN DEL CAMBIO IMPORTANTE ***
+        String token = jwtService.generateToken(extraClaims, user);
 
         return new AuthResponse(token);
     }

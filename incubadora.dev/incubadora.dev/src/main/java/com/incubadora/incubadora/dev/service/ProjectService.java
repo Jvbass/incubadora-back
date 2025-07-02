@@ -75,7 +75,7 @@ public class ProjectService {
     }
 
 
-    // Obtener todos los proyectos ---
+    // Obtener todos los proyectos (Resumen de los proyectos ProjectSummaryDto)---
     @Transactional(readOnly = true)
     public List<ProjectSummaryDto> getAllProjects() {
         return projectRepository.findAll().stream()
@@ -83,12 +83,29 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
-    //  Obtener un proyecto por ID (detalle completo) ---
+    //  Obtener un proyecto por ID (detalle del proyecto completo ProjectResponseDto) ---
     @Transactional(readOnly = true)
     public ProjectResponseDto getProjectById(Integer projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con ID: " + projectId));
         return mapToProjectResponseDto(project);
+    }
+
+    // Obtener todos los proyectos de un usuario por su nombre de usuario ---
+    @Transactional(readOnly = true)
+    public List<ProjectSummaryDto> getProjectsByUsername(String username) {
+        return projectRepository.findByDeveloper_Username(username).stream()
+                .map(this::mapToProjectSummaryDto)
+                .collect(Collectors.toList());
+    }
+
+
+    // Obtener todos los proyectos de un usuario por su ID ---
+    @Transactional(readOnly = true)
+    public List<ProjectSummaryDto> getProjectsByUserId(Integer userId) {
+        return projectRepository.findByDeveloper_Id(userId).stream()
+                .map(this::mapToProjectSummaryDto)
+                .collect(Collectors.toList());
     }
 
 
@@ -105,10 +122,9 @@ public class ProjectService {
 //        dto.setRepositoryUrl(project.getRepositoryUrl());
         dto.setDevelopmentProgress(project.getDevelopmentProgress());
 
-        dto.setTechnologyNames(project.getTechnologies().stream()
-                .map(Technology::getName)
+        dto.setTechnologies(project.getTechnologies().stream()
+                .map(tech -> new TechnologyDto(tech.getId(), tech.getName(), tech.getTechColor()))
                 .collect(Collectors.toSet()));
-
         return dto;
     }
 

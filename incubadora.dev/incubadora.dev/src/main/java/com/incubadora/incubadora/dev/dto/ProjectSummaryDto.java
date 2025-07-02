@@ -12,7 +12,7 @@ public class ProjectSummaryDto {
     private String title;
     private String developerUsername;
     private Timestamp createdAt;
-    private Set<String> technologyNames; // Solo los nombres para la vista de lista
+    private Set<TechnologyDto> technologies; // Colores de las tecnologías para la vista de lista
     private boolean isCollaborative;
     private boolean needMentoring = false; // Indica si el proyecto necesita mentoría
     private String status;
@@ -52,14 +52,6 @@ public class ProjectSummaryDto {
         this.createdAt = createdAt;
     }
 
-    public Set<String> getTechnologyNames() {
-        return technologyNames;
-    }
-
-    public void setTechnologyNames(Set<String> technologyNames) {
-        this.technologyNames = technologyNames;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -91,5 +83,13 @@ public class ProjectSummaryDto {
 
     public void setNeedMentoring(boolean needMentoring) {
         this.needMentoring = needMentoring;
+    }
+
+    public Set<TechnologyDto> getTechnologies() {
+        return technologies;
+    }
+
+    public void setTechnologies(Set<TechnologyDto> technologies) {
+        this.technologies = technologies;
     }
 }

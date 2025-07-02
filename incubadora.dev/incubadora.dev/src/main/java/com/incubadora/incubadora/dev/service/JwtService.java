@@ -24,19 +24,50 @@ public class JwtService {
     @Value("${jwt.token.expiration-ms}")
     private long jwtExpiration;
 
+
+    /**
+     * Extrae el nombre de usuario del token JWT.
+     * @param token El token JWT.
+     * @return El nombre de usuario extraído del token.
+     */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    /**
+     * Extrae el ID del usuario desde el token JWT.
+     * @param token El token JWT.
+     * @return El ID del usuario como un Integer.
+     */
+    public Integer extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", Integer.class));
+    }
+
+    /**
+     * Extrae la fecha de expiración del token JWT.
+     * @param token El token JWT.
+     * @return La fecha de expiración del token.
+     */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
+    /**
+     * Extrae el rol del usuario desde el token JWT.
+     * @param token El token JWT.
+     * @return El rol del usuario como un String.
+     */
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    /**
+     * Genera un token JWT con los reclamos adicionales y los detalles del usuario.
+     * @param extraClaims Mapa de reclamos adicionales a incluir en el token.
+     * @param userDetails Detalles del usuario para el cual se genera el token.
+     * @return El token JWT generado.
+     */
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
