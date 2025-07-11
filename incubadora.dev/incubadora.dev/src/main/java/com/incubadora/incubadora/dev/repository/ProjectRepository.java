@@ -17,9 +17,8 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
      * para evitar el problema N+1.
      * @return Una lista de todos los proyectos con sus relaciones cargadas.
      */
-    @Override
     @EntityGraph(attributePaths = {"developer", "technologies"}) // Carga anticipada de relaciones
-    List<Project> findAll();
+    List<Project> findByStatus(String status);
 
     /**
      * Busca un proyecto por su ID y carga anticipadamente las relaciones especificadas.

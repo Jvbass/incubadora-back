@@ -16,7 +16,7 @@ public class CreateProjectRequestDto {
     private String title;
 
     @NotBlank(message = "La descripción no puede estar vacía.")
-    @Size(max = 500, message = "La descripcion no puede exceder los 500 caracteres.")
+    @Size(max = 2000, message = "La descripcion no puede exceder los 2000 caracteres.")
     private String description;
 
     @URL(message = "El enlace al repositorio debe ser una URL válida.")

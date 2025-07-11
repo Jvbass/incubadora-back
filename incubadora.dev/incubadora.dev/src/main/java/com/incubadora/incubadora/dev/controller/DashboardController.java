@@ -35,7 +35,7 @@ public class DashboardController {
             @ApiResponse(responseCode = "401", description = "No autorizado - Token no válido o ausente")
     })
     @GetMapping
-    @PreAuthorize("hasRole('Desarrollador')") // <-- AÑADIDO: Solo permite acceso a usuarios con el rol "Desarrollador"
+    @PreAuthorize("hasRole('Desarrollador')") // Solo permite acceso a usuarios con el rol "Desarrollador"
     public ResponseEntity<DashboardResponseDto> getDashboardInfo() {
         // 1. Obtener el objeto Authentication del contexto de seguridad de Spring
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

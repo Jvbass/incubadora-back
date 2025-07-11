@@ -72,6 +72,14 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FeedbackProject> feedbacks = new HashSet<>();
 
+
+    /*TODO implementar un enum para el estado del proyecto*/
+    public enum ProjectStatus {
+        published,
+        pending,
+        archived
+    }
+
     // Constructores
     public Project() {
     }

@@ -39,13 +39,10 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-
-
     /**
      * Endpoint para crear un nuevo proyecto.
      * Solo los usuarios con el rol 'Desarrollador' pueden acceder a este endpoint.
-     *
-     * @param request El cuerpo de la petición con los datos para crear el proyecto. Se valida automáticamente.
+     * @param request        El cuerpo de la petición con los datos para crear el proyecto. Se valida automáticamente.
      * @param authentication Objeto inyectado por Spring Security que contiene la información del usuario autenticado.
      * @return Una respuesta HTTP 201 (Created) con los datos del proyecto recién creado.
      */
@@ -75,9 +72,8 @@ public class ProjectController {
     }
 
 
-
     /**
-     * Endpoint para obtener una lista resumida de todos los proyectos publicados.
+     * Endpoint para obtener una lista resumida de todos los proyectos con estado published.
      * Accesible por cualquier usuario que esté autenticado, sin importar su rol.
      *
      * @return Una respuesta HTTP 200 (OK) con una lista de resúmenes de proyectos.
@@ -91,11 +87,10 @@ public class ProjectController {
     // 'isAuthenticated()' permite el acceso a cualquier usuario que haya iniciado sesión correctamente.
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ProjectSummaryDto>> getAllProjects() {
-        List<ProjectSummaryDto> projects = projectService.getAllProjects();
+        List<ProjectSummaryDto> projects = projectService.getAllPublishedProjects();
         // ResponseEntity.ok() es un atajo para crear una respuesta con estado 200 OK.
         return ResponseEntity.ok(projects);
     }
-
 
 
     /**
@@ -121,7 +116,10 @@ public class ProjectController {
     }
 
 
-
+    /*
+    *  Endpoint para obtener una lista de los proyectos del usuario autenticado.
+    *  Solo accesible por usuarios con el rol 'Desarrollador' y el usuario que creo el proyecto.
+    * */
     @Operation(
             summary = "Obtiene una lista de los proyectos del usuario autenticado",
             description = "Accesible solo por un usuario con rol 'Desarrollador'. Devuelve una lista de resúmenes de sus propios proyectos.",
@@ -132,14 +130,40 @@ public class ProjectController {
     public ResponseEntity<List<ProjectSummaryDto>> getMyProjects(Authentication authentication) {
         // 1. Obtenemos el objeto User completo desde el contexto de seguridad.
         User currentUser = (User) authentication.getPrincipal();
-
         // 2. Extraemos su ID numérico.
         Integer userId = currentUser.getId();
-
         // 3. Llamamos al servicio pasando el ID.
         List<ProjectSummaryDto> myProjects = projectService.getProjectsByUserId(userId);
-
         return ResponseEntity.ok(myProjects);
+    }
+
+
+    /*
+    * Endpoint para editar un proyecto existente.
+    * Solo accesible por usuarios con el rol 'Desarrollador' y el usuario que creó el proyecto.
+    *
+    *  @param id El ID del proyecto a actualizar.
+     *  @param request El cuerpo de la petición con los datos actualizados del proyecto.
+     *  @param authentication Objeto que contiene la información del usuario autenticado.
+     *  @return Una respuesta HTTP 200 (OK) con los datos del proyecto actualizado.
+    * */
+    @Operation(
+            summary = "Actualiza un proyecto existente",
+            description = "Permite al propietario de un proyecto actualizar sus detalles. Se requiere ser el autor original.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponse(responseCode = "200", description = "Proyecto actualizado exitosamente")
+    @ApiResponse(responseCode = "403", description = "Acceso denegado, no eres el propietario del proyecto")
+    @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+    @PutMapping("/{id}")
+    @PreAuthorize("@projectService.isOwner(#id, authentication.name)")
+    public ResponseEntity<ProjectResponseDto> updateProject(
+            @PathVariable Integer id,
+            @Valid @RequestBody CreateProjectRequestDto request,
+            Authentication authentication) {
+
+        ProjectResponseDto updatedProject = projectService.updateProject(id, request);
+        return ResponseEntity.ok(updatedProject);
     }
 
 
