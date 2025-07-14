@@ -9,10 +9,12 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
-@Table(name = "FeedbackProject")
+@Table(name = "feedback_project")
 public class FeedbackProject {
 
     @Id
@@ -37,7 +39,7 @@ public class FeedbackProject {
     private Byte rating; // rating (numérico 1 al 10)
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", nullable = false)
     private Timestamp createdAt;
 
     @UpdateTimestamp
@@ -45,7 +47,8 @@ public class FeedbackProject {
             nullable = false)
     private Timestamp updatedAt;
 
-    // Constructores
+    @OneToMany(mappedBy = "feedbackProject", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comment> comments = new HashSet<>();
 
     public FeedbackProject() {
     }
@@ -112,6 +115,14 @@ public class FeedbackProject {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 
     // equals y hashCode
