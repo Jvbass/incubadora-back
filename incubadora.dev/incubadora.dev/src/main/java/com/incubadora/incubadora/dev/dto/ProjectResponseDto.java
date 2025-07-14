@@ -10,6 +10,7 @@ import java.util.Set;
  */
 public class ProjectResponseDto {
     private Integer id;
+    private String slug;
     private String title;
     private String description;
     private String repositoryUrl;
@@ -118,5 +119,13 @@ public class ProjectResponseDto {
 
     public void setNeedMentoring(Boolean needMentoring) {
         this.needMentoring = needMentoring;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 }

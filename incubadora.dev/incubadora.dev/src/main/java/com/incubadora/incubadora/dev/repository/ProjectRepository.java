@@ -48,5 +48,8 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
      */
     @EntityGraph(attributePaths = {"developer", "technologies"})
     List<Project> findByDeveloper_Id(Integer developerId);
+
+
+    Optional<Project> findBySlug(String slug);
 }
 

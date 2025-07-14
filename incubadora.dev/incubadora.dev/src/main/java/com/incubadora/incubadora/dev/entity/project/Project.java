@@ -22,6 +22,9 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(nullable = false, unique = true)
+    private String slug;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "developer_id", nullable = false)
     private User developer;
@@ -71,6 +74,14 @@ public class Project {
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FeedbackProject> feedbacks = new HashSet<>();
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
 
 
     /*TODO implementar un enum para el estado del proyecto*/
