@@ -16,15 +16,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/*
- *  Servicio para tomar la petición, encontrar al usuario, las tecnologías y las herramientas, y crear el nuevo proyecto.
- * - Buscar al usuario desarrollador por su nombre de usuario.
- * - Buscar las tecnologías y herramientas por sus IDs.
- * - Crear una nueva entidad de Proyecto con los datos proporcionados.
- * - Asignar las tecnologías y herramientas al proyecto.
- * - Guardar el proyecto en la base de datos.
- *
- * */
+/**
+ * Servicio para gestionar las operaciones relacionadas con los proyectos.
+ */
 
 @Service
 public class ProjectService {
@@ -43,22 +37,27 @@ public class ProjectService {
         this.slugService = slugService;
     }
 
-    /*=====================================================
-     * crear proyecto
-     * =====================================================*/
+    /**
+     * =====================Crear proyecto================================
+     *
+     * @param request  DTO con los datos del proyecto
+     * @param username Nombre de usuario del desarrollador que crea el proyecto
+     * @return ProjectResponseDto DTO con los detalles del proyecto creado
+     * =====================================================
+     */
     @Transactional
     public ProjectResponseDto createProject(CreateProjectRequestDto request, String username) {
-        // 1. Buscar al usuario desarrollador que está creando el proyecto.
+        // obtiene al usuario desarrollador que está creando el proyecto.
         User developer = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        // 2. Buscar las entidades de Tecnología y Herramienta por sus IDs.
+        // Busca las entidades de Tecnología y Herramienta por sus IDs.
         List<Technology> technologies = technologyRepository.findAllById(request.getTechnologyIds());
         if (technologies.size() != request.getTechnologyIds().size()) {
             throw new IllegalArgumentException("Una o más tecnologías especificadas no son válidas.");
         }
 
-        // 3. Crear la nueva entidad de Proyecto.
+        // Crea un nuevo objeto de Proyecto.
         Project newProject = new Project();
         newProject.setTitle(request.getTitle());
         newProject.setDescription(request.getDescription());
@@ -70,26 +69,28 @@ public class ProjectService {
         newProject.setNeedMentoring(request.getNeedMentoring());
         newProject.setDevelopmentProgress(request.getDevelopmentProgress());
 
-        // Generar un slug único basado en el título del proyecto.
+        // Genera un slug único basado en el título del proyecto.
         String uniqueSlug = slugService.generateUniqueSlug(request.getTitle());
         newProject.setSlug(uniqueSlug);
 
-        // 4. Asignar las tecnologías y herramientas.
+        // Asigna las tecnologías y herramientas.
         newProject.setTechnologies(new HashSet<>(technologies));
-        // 5. Guardar el proyecto en la base de datos.
+        // Guarda el proyecto en la base de datos.
         Project savedProject = projectRepository.save(newProject);
 
-        // 6. Mapear la entidad guardada a un DTO de respuesta y devolverlo.
+        // Mapea la entidad guardada a un DTO de respuesta y lo devuelve.
         return mapToProjectResponseDto(savedProject);
     }
 
 
-    // Actualizar proyecto
-
     /**
-     * =====================================================
+     * ========================Actualiza un proyecto=============================
      * Actualiza un proyecto existente con los datos proporcionados.
-     * La verificación de propiedad ya se ha realizado mediante @PreAuthorize.
+     * La verificación de propiedad ya se ha realizado mediante @PreAuthorize en el controlador.
+     *
+     * @param slug    El slug del proyecto a actualizar.
+     * @param request El DTO con los datos actualizados del proyecto.
+     * @return ProjectResponseDto DTO con los detalles del proyecto actualizado.
      * =====================================================
      */
     @Transactional
@@ -127,6 +128,8 @@ public class ProjectService {
 
     /*=====================================================
      *   Obtener todos los proyectos de un usuario por su nombre de usuario (Resumen de los proyectos ProjectSummaryDto)
+     * @param username Nombre de usuario del desarrollador
+     * @return Lista de ProjectSummaryDto con los proyectos del desarrollador
      *======================================================*/
     @Transactional(readOnly = true)
     public List<ProjectSummaryDto> getProjectsByUsername(String username) {
@@ -135,8 +138,11 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
+
     /*======================================================*
-     * Obtiene todos los detalles de un proyecto por su Slug
+     * Obtiene el detalle de un proyecto por su Slug
+     * @param slug Slug del proyecto
+     * @return ProjectResponseDto con los detalles del proyecto
      *======================================================* */
     @Transactional(readOnly = true)
     public ProjectResponseDto getProjectBySlug(String slug) {
@@ -149,6 +155,8 @@ public class ProjectService {
     /**
      * ======================================================*
      * Obtiene todos los proyectos en estado publicados.
+     *
+     * @return Lista de ProjectSummaryDto con los proyectos publicados.
      * ======================================================
      */
     @Transactional(readOnly = true)
@@ -157,13 +165,17 @@ public class ProjectService {
         return projectRepository.findByStatus("published").stream()
                 .map(this::mapToProjectSummaryDto) // Mapeamos cada proyecto a su DTO
                 .collect(Collectors.toList()); // Collectors.toList() convierte el Stream en una lista
-
     }
 
 
-    /*================================================
+    /**
+     * ================================================
      * Obtener todos los proyectos de un usuario por su ID (Resumen de los proyectos ProjectSummaryDto)
-     * ===============================================*/
+     *
+     * @param userId ID del desarrollador
+     * @return Lista de ProjectSummaryDto con los proyectos del desarrollador
+     * ===============================================
+     */
     @Transactional(readOnly = true)
     public List<ProjectSummaryDto> getProjectsByUserId(Integer userId) {
         return projectRepository.findByDeveloper_Id(userId).stream()
@@ -172,9 +184,14 @@ public class ProjectService {
     }
 
 
-    /*======================================================*
+    /**
+     * ======================================================*
      * helper para mapear a DTO de proyectos resumidos
-     * ======================================================**/
+     *
+     * @param project Entidad de proyecto a mapear
+     * @return ProjectSummaryDto con los datos del proyecto
+     * ======================================================
+     **/
     private ProjectSummaryDto mapToProjectSummaryDto(Project project) {
         ProjectSummaryDto dto = new ProjectSummaryDto();
         dto.setId(project.getId());
@@ -222,7 +239,7 @@ public class ProjectService {
 
 
     /**
-     * Método de autorización para ser usado por Spring Security (@PreAuthorize).
+     * Método de autorización para ser usado por Spring Security (@PreAuthorize) desde el controlador.
      * Verifica si el usuario autenticado es el propietario del proyecto.
      *
      * @param slug     El ID del proyecto a verificar.
@@ -238,6 +255,4 @@ public class ProjectService {
                 // Si el Optional está vacío (proyecto no encontrado), devolvemos false.
                 .orElse(false);
     }
-
-
 }
