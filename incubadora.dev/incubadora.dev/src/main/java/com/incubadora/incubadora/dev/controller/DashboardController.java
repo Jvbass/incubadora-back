@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/dashboard")
-@Tag(name = "2. Dashboard", description = "Endpoints para el panel de usuario")
+@Tag(name = "Dashboard", description = "Endpoints para el panel de usuario")
 public class DashboardController {
 
     @Operation(

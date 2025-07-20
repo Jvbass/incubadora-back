@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@Tag(name = "3. Panel de Administrador", description = "Endpoints específicos para administradores")
+@Tag(name = "Panel de Administrador", description = "Endpoints específicos para administradores")
 public class AdminController {
 
     @Operation(

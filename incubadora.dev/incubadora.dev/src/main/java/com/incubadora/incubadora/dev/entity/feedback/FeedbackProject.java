@@ -34,9 +34,9 @@ public class FeedbackProject {
     private String feedbackDescription;
 
     @Min(1)
-    @Max(10)
+    @Max(5)
     @Column(name = "rating", nullable = false)
-    private Byte rating; // rating (numérico 1 al 10)
+    private Byte rating; // rating (numérico 1 al 5)
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", nullable = false)

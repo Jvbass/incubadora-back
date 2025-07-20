@@ -25,7 +25,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/projects") // Define la ruta base para todos los endpoints de este controlador.
-@Tag(name = "4. Proyectos", description = "Operaciones relacionadas con los proyectos de los usuarios")
+@Tag(name = "Proyectos", description = "Operaciones relacionadas con los proyectos de los usuarios")
 public class ProjectController {
 
     // Inyección de dependencia del servicio que contiene la lógica de negocio para los proyectos.

@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/recruiter")
-@Tag(name = "3. Panel de Recruiter", description = "Endpoints específicos para Recruiter")
+@Tag(name = "Panel de Recruiter", description = "Endpoints específicos para Recruiter")
 public class RecruiterController {
 
     @Operation(

@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@Tag(name = "6. Feedback de Proyectos", description = "Operaciones para dar, editar y borrar feedback en proyectos")
+@Tag(name = "Feedback de Proyectos", description = "Operaciones para dar, editar y borrar feedback en proyectos")
 public class FeedbackProjectController {
 
     private final FeedbackService feedbackService;
@@ -25,6 +25,7 @@ public class FeedbackProjectController {
     public FeedbackProjectController(FeedbackService feedbackService) {
         this.feedbackService = feedbackService;
     }
+
 
     /*===================================
      * Endpoint para crear un nuevo feedback para un proyecto.

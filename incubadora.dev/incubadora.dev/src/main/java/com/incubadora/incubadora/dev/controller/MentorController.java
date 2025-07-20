@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mentor")
-@Tag(name = "3. Panel de Mentor", description = "Endpoints específicos para Mentores")
+@Tag(name = "Panel de Mentor", description = "Endpoints específicos para Mentores")
 public class MentorController {
 
     @Operation(

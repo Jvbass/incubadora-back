@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@Tag(name = "7. Comentarios de Feedback", description = "Operaciones para gestionar los comentarios sobre un feedback")
+@Tag(name = "Comentarios de Feedback", description = "Operaciones para gestionar los comentarios sobre un feedback")
 public class CommentController {
 
     private final CommentService commentService;
