@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
                 version = "v1.0.0",
                 description = "API para la plataforma Incubadora.dev, gestionando desarrolladores, mentores, reclutadores y proyectos."
         ),
-        // Aplica el requisito de seguridad a nivel global para todos los endpoints
         security = @SecurityRequirement(name = "bearerAuth")
 )
 @SecurityScheme(

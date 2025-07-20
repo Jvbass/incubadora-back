@@ -29,16 +29,22 @@ public class FeedbackService {
     }
 
 
-// Crear feedback
+    /*
+     * Crea un feedback para un proyecto.
+     * Dueño del proyecto no puede dar feedback a su propio proyecto.
+     * El proyecto debe estar publicado para poder dar feedback.
+     * */
     @Transactional
-    public FeedbackResponseDto createFeedback(Integer projectId, CreateFeedbackProjectRequestDto request, User currentUser) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con ID: " + projectId));
+    public FeedbackResponseDto createFeedback(String projectSlug, CreateFeedbackProjectRequestDto request, User currentUser) {
+        // 1. Buscamos el proyecto por SLUG
+        Project project = projectRepository.findBySlug(projectSlug)
+                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con slug: " + projectSlug));
 
+        // limita feedback solo a proyectos publicados
         if (!"published".equalsIgnoreCase(project.getStatus())) {
             throw new OperationNotAllowedException("No se puede dar feedback a un proyecto que no está publicado.");
         }
-
+        // Verificamos que el usuario no sea el dueño del proyecto
         if (Objects.equals(project.getDeveloper().getId(), currentUser.getId())) {
             throw new OperationNotAllowedException("No puedes dar feedback a tu propio proyecto.");
         }
@@ -49,31 +55,26 @@ public class FeedbackService {
     }
 
 
-
     // metodo para obtener los feedbacks de un proyecto
     @Transactional(readOnly = true)
-    public List<FeedbackResponseDto> getFeedbackForProject(Integer projectId) {
-        // Primero, verificamos que el proyecto exista.
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con ID: " + projectId));
+    public List<FeedbackResponseDto> getFeedbackForProject(String projectSlug) {
+        // 1. Buscamos el proyecto por SLUG
+        Project project = projectRepository.findBySlug(projectSlug)
+                .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con slug: " + projectSlug));
 
-        // Regla de negocio: solo se muestra feedback de proyectos publicados.
+        // El resto de tu lógica original permanece intacta
         if (!"published".equalsIgnoreCase(project.getStatus())) {
-            // Devolvemos una lista vacía si el proyecto no está publicado.
-            // Es una mejor experiencia de usuario que devolver un error.
             return Collections.emptyList();
         }
 
-        // Buscamos y mapeamos los feedbacks.
-        return feedbackRepository.findByProjectId(projectId).stream()
+        // Usamos el ID del proyecto encontrado para buscar sus feedbacks
+        return feedbackRepository.findByProjectId(project.getId()).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
 
-
-
-// Editar feedback
+    // Editar feedback
     @Transactional
     public FeedbackResponseDto updateFeedback(Integer feedbackId, CreateFeedbackProjectRequestDto request, User currentUser) {
         FeedbackProject feedback = findFeedbackByIdAndCheckOwnership(feedbackId, currentUser.getId());
@@ -83,11 +84,13 @@ public class FeedbackService {
         }
 
         feedback.setFeedbackDescription(request.getFeedbackDescription());
-        feedback.setRating(request.getRating()); // Actualizamos el rating
+        feedback.setRating(request.getRating());
         FeedbackProject updatedFeedback = feedbackRepository.save(feedback);
         return mapToDto(updatedFeedback);
     }
-// borrar feedback
+
+
+    // borrar feedback
     @Transactional
     public void deleteFeedback(Integer feedbackId, User currentUser) {
         FeedbackProject feedback = findFeedbackByIdAndCheckOwnership(feedbackId, currentUser.getId());
@@ -99,7 +102,8 @@ public class FeedbackService {
         feedbackRepository.delete(feedback);
     }
 
-// metodo para encontrar feedback por ID y verificar la propiedad
+
+    // metodo para encontrar feedback por ID y verificar la propiedad
     private FeedbackProject findFeedbackByIdAndCheckOwnership(Integer feedbackId, Integer currentUserId) {
         FeedbackProject feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new ResourceNotFoundException("Feedback no encontrado con ID: " + feedbackId));
@@ -110,14 +114,11 @@ public class FeedbackService {
         return feedback;
     }
 
-
-
-//helper para mapear FeedbackProject a FeedbackResponseDto
     private FeedbackResponseDto mapToDto(FeedbackProject feedback) {
         FeedbackResponseDto dto = new FeedbackResponseDto();
         dto.setId(feedback.getId());
         dto.setFeedbackDescription(feedback.getFeedbackDescription());
-        dto.setRating(feedback.getRating()); // Mapeamos el rating
+        dto.setRating(feedback.getRating());
         dto.setAuthorId(feedback.getAuthor().getId());
         dto.setAuthor(feedback.getAuthor().getUsername());
         dto.setProjectId(feedback.getProject().getId());
@@ -125,5 +126,4 @@ public class FeedbackService {
         dto.setUpdatedAt(feedback.getUpdatedAt());
         return dto;
     }
-
 }

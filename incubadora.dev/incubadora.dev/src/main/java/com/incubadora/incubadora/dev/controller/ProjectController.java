@@ -25,7 +25,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/projects") // Define la ruta base para todos los endpoints de este controlador.
-@Tag(name = "4. Proyectos", description = "Operaciones relacionadas con los proyectos de los usuarios")
+@Tag(name = "Proyectos", description = "Operaciones relacionadas con los proyectos de los usuarios")
 public class ProjectController {
 
     // Inyección de dependencia del servicio que contiene la lógica de negocio para los proyectos.
@@ -93,27 +93,27 @@ public class ProjectController {
     }
 
 
-    /**
-     * Endpoint para obtener los detalles completos de un proyecto específico por su ID.
-     * Accesible por cualquier usuario que esté autenticado.
-     *
-     * @param id El ID del proyecto a buscar, extraído de la ruta de la URL.
-     * @return Una respuesta HTTP 200 (OK) con los detalles completos del proyecto, o 404 si no se encuentra.
-     */
-    @Operation(
-            summary = "Obtiene los detalles completos de un proyecto por su ID",
-            description = "Accesible por cualquier usuario autenticado.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
-    @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ProjectResponseDto> getProjectById(@PathVariable Integer id) {
-        // @PathVariable: Esta anotación vincula el valor de la variable de la URI (en este caso, {id})
-        // al parámetro del método.
-        ProjectResponseDto project = projectService.getProjectById(id);
-        return ResponseEntity.ok(project);
-    }
+//    /**
+//     * Endpoint para obtener los detalles completos de un proyecto específico por su ID.
+//     * Accesible por cualquier usuario que esté autenticado.
+//     *
+//     * @param id El ID del proyecto a buscar, extraído de la ruta de la URL.
+//     * @return Una respuesta HTTP 200 (OK) con los detalles completos del proyecto, o 404 si no se encuentra.
+//     */
+//    @Operation(
+//            summary = "Obtiene los detalles completos de un proyecto por su ID",
+//            description = "Accesible por cualquier usuario autenticado.",
+//            security = @SecurityRequirement(name = "bearerAuth")
+//    )
+//    @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+//    @GetMapping("/{id}")
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<ProjectResponseDto> getProjectById(@PathVariable Integer id) {
+//        // @PathVariable: Esta anotación vincula el valor de la variable de la URI (en este caso, {id})
+//        // al parámetro del método.
+//        ProjectResponseDto project = projectService.getProjectById(id);
+//        return ResponseEntity.ok(project);
+//    }
 
 
     /*
@@ -155,15 +155,31 @@ public class ProjectController {
     @ApiResponse(responseCode = "200", description = "Proyecto actualizado exitosamente")
     @ApiResponse(responseCode = "403", description = "Acceso denegado, no eres el propietario del proyecto")
     @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
-    @PutMapping("/{id}")
-    @PreAuthorize("@projectService.isOwner(#id, authentication.name)")
+    @PutMapping("/{slug}")
+    @PreAuthorize("@projectService.isOwnerBySlug(#slug, authentication.name)") // Y su seguridad
     public ResponseEntity<ProjectResponseDto> updateProject(
-            @PathVariable Integer id,
+            @PathVariable String slug,
             @Valid @RequestBody CreateProjectRequestDto request,
             Authentication authentication) {
 
-        ProjectResponseDto updatedProject = projectService.updateProject(id, request);
+        ProjectResponseDto updatedProject = projectService.updateProjectBySlug(slug, request);
         return ResponseEntity.ok(updatedProject);
+    }
+
+
+    /*
+    * Obtiene un proyecto por su slug.
+    *  */
+    @Operation(
+            summary = "Obtiene los detalles completos de un proyecto por su Slug",
+            description = "Accesible por cualquier usuario autenticado.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
+    @GetMapping("/{slug}")
+    public ResponseEntity<ProjectResponseDto> getProjectBySlug(@PathVariable String slug) {
+        ProjectResponseDto project = projectService.getProjectBySlug(slug);
+        return ResponseEntity.ok(project);
     }
 
 

@@ -9,6 +9,7 @@ import java.util.Set;
  */
 public class ProjectSummaryDto {
     private Integer id;
+    private String slug;
     private String title;
     private String developerUsername;
     private Timestamp createdAt;
@@ -87,5 +88,13 @@ public class ProjectSummaryDto {
 
     public void setTechnologies(Set<TechnologyDto> technologies) {
         this.technologies = technologies;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 }

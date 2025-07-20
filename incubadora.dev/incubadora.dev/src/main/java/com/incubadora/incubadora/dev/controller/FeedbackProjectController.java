@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@Tag(name = "6. Feedback de Proyectos", description = "Operaciones para dar, editar y borrar feedback en proyectos")
+@Tag(name = "Feedback de Proyectos", description = "Operaciones para dar, editar y borrar feedback en proyectos")
 public class FeedbackProjectController {
 
     private final FeedbackService feedbackService;
@@ -26,23 +26,29 @@ public class FeedbackProjectController {
         this.feedbackService = feedbackService;
     }
 
-    /*
+
+    /*===================================
      * Endpoint para crear un nuevo feedback para un proyecto.
      * Solo los usuarios autenticados pueden acceder a este endpoint y el usuario que creo el proyecto no puede crear feedback en su propio proyecto.
-     *
-     * */
+     *=================================== */
     @Operation(summary = "Crea un nuevo feedback para un proyecto")
-    @PostMapping("/projects/{projectId}/feedback")
+    @PostMapping("/projects/{projectSlug}/feedback") // CAMBIO: de projectId a projectSlug
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FeedbackResponseDto> createFeedback(
-            @PathVariable Integer projectId,
+            @PathVariable String projectSlug, // CAMBIO: de Integer a String
             @Valid @RequestBody CreateFeedbackProjectRequestDto request,
             Authentication authentication) {
         User currentUser = (User) authentication.getPrincipal();
-        FeedbackResponseDto createdFeedback = feedbackService.createFeedback(projectId, request, currentUser); // llama al servicio para crear el feedback
+        FeedbackResponseDto createdFeedback = feedbackService.createFeedback(projectSlug, request, currentUser);
         return new ResponseEntity<>(createdFeedback, HttpStatus.CREATED);
     }
 
+
+    /*===================================
+     *  Actualiza un feedback existente.
+     * ===================================*/
+    // Los endpoints de editar y borrar no dependen del proyecto
+    // Se identifican por el ID del propio feedback.
     @Operation(summary = "Actualiza un feedback existente")
     @PutMapping("/feedback/{feedbackId}")
     @PreAuthorize("isAuthenticated()")
@@ -55,6 +61,9 @@ public class FeedbackProjectController {
         return ResponseEntity.ok(updatedFeedback);
     }
 
+    /*===================================
+     * Elimina un feedback existente.
+     * ==================================*/
     @Operation(summary = "Elimina un feedback existente")
     @DeleteMapping("/feedback/{feedbackId}")
     @PreAuthorize("isAuthenticated()")
@@ -66,12 +75,15 @@ public class FeedbackProjectController {
         return ResponseEntity.noContent().build();
     }
 
+    /*===================================
+     * Obtiene todos los feedbacks de un proyecto.
+     *===================================*/
     @Operation(summary = "Obtiene todos los feedbacks de un proyecto")
-    @GetMapping("/projects/{projectId}/feedback")
+    @GetMapping("/projects/{projectSlug}/feedback") // CAMBIO: de projectId a projectSlug
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<FeedbackResponseDto>> getFeedbackForProject(
-            @PathVariable Integer projectId) {
-        List<FeedbackResponseDto> feedbackList = feedbackService.getFeedbackForProject(projectId);
+            @PathVariable String projectSlug) { // CAMBIO: de Integer a String
+        List<FeedbackResponseDto> feedbackList = feedbackService.getFeedbackForProject(projectSlug);
         return ResponseEntity.ok(feedbackList);
     }
 }

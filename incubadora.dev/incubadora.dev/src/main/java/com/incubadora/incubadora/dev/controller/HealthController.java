@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api") // Define un prefijo base para todos los endpoints en este controlador
-@Tag(name = "0.Health_Check", description = "Endpoints para verificar el estado del servicio") // Para agrupar en Swagger
+@Tag(name = "Health_Check", description = "Endpoints para verificar el estado del servicio") // Para agrupar en Swagger
 public class HealthController {
 
     @Operation(

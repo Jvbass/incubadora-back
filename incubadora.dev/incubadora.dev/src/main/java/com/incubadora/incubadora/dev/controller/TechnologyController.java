@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/technologies")
-@Tag(name = "5. Tecnologías", description = "Operaciones relacionadas con las tecnologías utilizadas en los proyectos")
+@Tag(name = "Tecnologías", description = "Operaciones relacionadas con las tecnologías utilizadas en los proyectos")
 public class TechnologyController {
 
     private final TechnologyService technologyService;
