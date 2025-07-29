@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -255,4 +256,44 @@ public class ProjectService {
                 // Si el Optional está vacío (proyecto no encontrado), devolvemos false.
                 .orElse(false);
     }
+
+
+    /**
+     * Verifica si un usuario tiene permiso para ver un proyecto.
+     * Se usa en @PreAuthorize para proteger el endpoint.
+     * Reglas:
+     * 1. Si el proyecto está 'published', cualquiera puede verlo.
+     * 2. Si no está 'published', solo el autor puede verlo.
+     *
+     * @param slug El slug del proyecto a verificar.
+     * @param username El nombre del usuario autenticado (puede ser nulo si es anónimo).
+     * @return true si el usuario tiene permiso, false en caso contrario.
+     */
+    @Transactional(readOnly = true)
+    public boolean canViewProject(String slug, String username) {
+        Optional<Project> projectOpt = projectRepository.findBySlug(slug);
+
+        // Si el proyecto no existe, permitimos que el controlador continúe
+        // para que pueda lanzar un error 404 Not Found, que es más preciso.
+        if (projectOpt.isEmpty()) {
+            return true;
+        }
+
+        Project project = projectOpt.get();
+
+        // Regla 1: El proyecto es público.
+        if ("published".equalsIgnoreCase(project.getStatus())) {
+            return true;
+        }
+
+        // Regla 2: El proyecto no es público, verificar si el usuario es el dueño.
+        // `username` viene del contexto de seguridad y es confiable.
+        if (username != null && project.getDeveloper().getUsername().equals(username)) {
+            return true;
+        }
+
+        // Si ninguna regla se cumple, se deniega el acceso.
+        return false;
+    }
+
 }
