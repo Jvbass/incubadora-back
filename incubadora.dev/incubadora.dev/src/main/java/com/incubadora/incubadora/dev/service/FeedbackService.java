@@ -22,10 +22,13 @@ import java.util.stream.Collectors;
 public class FeedbackService {
     private final FeedbackProjectRepository feedbackRepository;
     private final ProjectRepository projectRepository;
+    private final NotificationService notificationService;
 
-    public FeedbackService(FeedbackProjectRepository feedbackRepository, ProjectRepository projectRepository) {
+    public FeedbackService(FeedbackProjectRepository feedbackRepository, ProjectRepository projectRepository,
+                           NotificationService notificationService) {
         this.feedbackRepository = feedbackRepository;
         this.projectRepository = projectRepository;
+        this.notificationService = notificationService;
     }
 
 
@@ -51,6 +54,10 @@ public class FeedbackService {
 
         FeedbackProject feedback = new FeedbackProject(project, currentUser, request.getFeedbackDescription(), request.getRating());
         FeedbackProject savedFeedback = feedbackRepository.save(feedback);
+
+        // Crear notificación para el dueño del proyecto
+        notificationService.createNotificationForNewFeedback(savedFeedback);
+
         return mapToDto(savedFeedback);
     }
 

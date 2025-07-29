@@ -33,6 +33,7 @@ public class ProjectController {
 
     /**
      * Constructor para la inyección de dependencias de Spring.
+     *
      * @param projectService El servicio que se encargará de la lógica de los proyectos.
      */
     public ProjectController(ProjectService projectService) {
@@ -42,6 +43,7 @@ public class ProjectController {
     /**
      * Endpoint para crear un nuevo proyecto.
      * Solo los usuarios con el rol 'Desarrollador' pueden acceder a este endpoint.
+     *
      * @param request        El cuerpo de la petición con los datos para crear el proyecto. Se valida automáticamente.
      * @param authentication Objeto inyectado por Spring Security que contiene la información del usuario autenticado.
      * @return Una respuesta HTTP 201 (Created) con los datos del proyecto recién creado.
@@ -117,9 +119,9 @@ public class ProjectController {
 
 
     /*
-    *  Endpoint para obtener una lista de los proyectos del usuario autenticado.
-    *  Solo accesible por usuarios con el rol 'Desarrollador' y el usuario que creo el proyecto.
-    * */
+     *  Endpoint para obtener una lista de los proyectos del usuario autenticado.
+     *  Solo accesible por usuarios con el rol 'Desarrollador' y el usuario que creo el proyecto.
+     * */
     @Operation(
             summary = "Obtiene una lista de los proyectos del usuario autenticado",
             description = "Accesible solo por un usuario con rol 'Desarrollador'. Devuelve una lista de resúmenes de sus propios proyectos.",
@@ -139,14 +141,14 @@ public class ProjectController {
 
 
     /*
-    * Endpoint para editar un proyecto existente.
-    * Solo accesible por usuarios con el rol 'Desarrollador' y el usuario que creó el proyecto.
-    *
-    *  @param id El ID del proyecto a actualizar.
+     * Endpoint para editar un proyecto existente.
+     * Solo accesible por usuarios con el rol 'Desarrollador' y el usuario que creó el proyecto.
+     *
+     *  @param id El ID del proyecto a actualizar.
      *  @param request El cuerpo de la petición con los datos actualizados del proyecto.
      *  @param authentication Objeto que contiene la información del usuario autenticado.
      *  @return Una respuesta HTTP 200 (OK) con los datos del proyecto actualizado.
-    * */
+     * */
     @Operation(
             summary = "Actualiza un proyecto existente",
             description = "Permite al propietario de un proyecto actualizar sus detalles. Se requiere ser el autor original.",
@@ -156,7 +158,7 @@ public class ProjectController {
     @ApiResponse(responseCode = "403", description = "Acceso denegado, no eres el propietario del proyecto")
     @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
     @PutMapping("/{slug}")
-    @PreAuthorize("@projectService.isOwnerBySlug(#slug, authentication.name)") // Y su seguridad
+    @PreAuthorize("@projectService.isOwnerBySlug(#slug, authentication.name)")
     public ResponseEntity<ProjectResponseDto> updateProject(
             @PathVariable String slug,
             @Valid @RequestBody CreateProjectRequestDto request,
@@ -168,8 +170,8 @@ public class ProjectController {
 
 
     /*
-    * Obtiene un proyecto por su slug.
-    *  */
+     * Obtiene un proyecto por su slug.
+     *  */
     @Operation(
             summary = "Obtiene los detalles completos de un proyecto por su Slug",
             description = "Accesible por cualquier usuario autenticado.",
@@ -177,6 +179,7 @@ public class ProjectController {
     )
     @ApiResponse(responseCode = "404", description = "Proyecto no encontrado")
     @GetMapping("/{slug}")
+    @PreAuthorize("@projectService.canViewProject(#slug, authentication.name)")
     public ResponseEntity<ProjectResponseDto> getProjectBySlug(@PathVariable String slug) {
         ProjectResponseDto project = projectService.getProjectBySlug(slug);
         return ResponseEntity.ok(project);
