@@ -1,6 +1,8 @@
 package com.incubadora.incubadora.dev.controller;
 
 import com.incubadora.incubadora.dev.dto.CreateProjectRequestDto;
+import com.incubadora.incubadora.dev.enums.ProjectSortBy;
+import com.incubadora.incubadora.dev.dto.PagedResponseDto;
 import com.incubadora.incubadora.dev.dto.ProjectResponseDto;
 import com.incubadora.incubadora.dev.dto.ProjectSummaryDto;
 import com.incubadora.incubadora.dev.entity.core.User;
@@ -80,17 +82,41 @@ public class ProjectController {
      *
      * @return Una respuesta HTTP 200 (OK) con una lista de resúmenes de proyectos.
      */
-    @Operation(
-            summary = "Obtiene una lista de todos los proyectos publicados",
-            description = "Accesible por cualquier usuario autenticado, sin importar su rol. Devuelve una lista de resúmenes.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
+//    @Operation(
+//            summary = "Obtiene una lista de todos los proyectos publicados",
+//            description = "Accesible por cualquier usuario autenticado, sin importar su rol. Devuelve una lista de resúmenes.",
+//            security = @SecurityRequirement(name = "bearerAuth")
+//    )
+//    @GetMapping
+//    // 'isAuthenticated()' permite el acceso a cualquier usuario que haya iniciado sesión correctamente.
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<List<ProjectSummaryDto>> getAllProjects() {
+//        List<ProjectSummaryDto> projects = projectService.getAllPublishedProjects();
+//        // ResponseEntity.ok() es un atajo para crear una respuesta con estado 200 OK.
+//        return ResponseEntity.ok(projects);
+//    }
+
+    /**
+     * Endpoint para obtener una lista paginada de todos los proyectos publicados.
+     * Este endpoint es accesible por cualquier usuario autenticado.
+     *
+     * @param page El número de página a obtener (0-indexado).
+     * @param size El tamaño de la página (número de proyectos por página).
+     */
+    @Operation(summary = "Obtiene una lista paginada de todos los proyectos publicados y ordenados segun el criterio especificado",
+            description = "Accesible por cualquier usuario autenticado. Devuelve una lista de resúmenes de proyectos paginada.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Lista de proyectos obtenida exitosamente")
+    @ApiResponse(responseCode = "400", description = "Parámetros de paginación inválidos")
+    @ApiResponse(responseCode = "403", description = "Acceso denegado, se requiere autenticación")
     @GetMapping
-    // 'isAuthenticated()' permite el acceso a cualquier usuario que haya iniciado sesión correctamente.
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ProjectSummaryDto>> getAllProjects() {
-        List<ProjectSummaryDto> projects = projectService.getAllPublishedProjects();
-        // ResponseEntity.ok() es un atajo para crear una respuesta con estado 200 OK.
+    public ResponseEntity<PagedResponseDto<ProjectSummaryDto>> getAllPublishedProjects(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "LATEST") ProjectSortBy sortBy) {
+
+        PagedResponseDto<ProjectSummaryDto> projects = projectService.getPublishedProjects(page, size, sortBy);
         return ResponseEntity.ok(projects);
     }
 

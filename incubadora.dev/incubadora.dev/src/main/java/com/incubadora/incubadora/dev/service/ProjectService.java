@@ -1,6 +1,7 @@
 package com.incubadora.incubadora.dev.service;
 
 import com.incubadora.incubadora.dev.dto.*;
+import com.incubadora.incubadora.dev.enums.ProjectSortBy;
 import com.incubadora.incubadora.dev.entity.common.Technology;
 import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.entity.project.Project;
@@ -8,14 +9,21 @@ import com.incubadora.incubadora.dev.exception.ResourceNotFoundException;
 import com.incubadora.incubadora.dev.repository.ProjectRepository;
 import com.incubadora.incubadora.dev.repository.TechnologyRepository;
 import com.incubadora.incubadora.dev.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Optional;
+
 
 /**
  * Servicio para gestionar las operaciones relacionadas con los proyectos.
@@ -168,6 +176,48 @@ public class ProjectService {
                 .collect(Collectors.toList()); // Collectors.toList() convierte el Stream en una lista
     }
 
+    /**
+     * Obtiene una lista paginada de todos los proyectos publicados.
+     *
+     * @param page El número de página a solicitar (empezando desde 0).
+     * @param size El tamaño de la página (cuántos proyectos por página).
+     * @return Un DTO con la lista de proyectos y la información de paginación.
+     */
+    @Transactional(readOnly = true)
+    public PagedResponseDto<ProjectSummaryDto> getPublishedProjects(int page, int size, ProjectSortBy sortBy) {
+        Page<Project> projectPage;
+        Pageable pageable = PageRequest.of(page, size); // El orden se define en la consulta, no aquí
+
+        projectPage = switch (sortBy) {
+            case MOST_FEEDBACK -> {
+                Timestamp sevenDaysAgoFeedback = Timestamp.valueOf(LocalDateTime.now().minusDays(7));
+                yield projectRepository.findPublishedProjectsOrderByMostFeedbackSince(sevenDaysAgoFeedback, pageable);
+            }
+            case TOP_RATED -> {
+                Timestamp sevenDaysAgoRating = Timestamp.valueOf(LocalDateTime.now().minusDays(7));
+                yield projectRepository.findPublishedProjectsOrderByTopRatingSince(sevenDaysAgoRating, pageable);
+            }
+            default -> {
+                // Para 'LATEST', sí definimos el orden aquí.
+                Pageable latestPageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+                yield projectRepository.findByStatus("published", latestPageable);
+            }
+        };
+
+        List<ProjectSummaryDto> content = projectPage.getContent().stream()
+                .map(this::mapToProjectSummaryDto)
+                .collect(Collectors.toList());
+
+        return new PagedResponseDto<>(
+                content,
+                projectPage.getNumber(),
+                projectPage.getSize(),
+                projectPage.getTotalElements(),
+                projectPage.getTotalPages(),
+                projectPage.isLast()
+        );
+    }
+
 
     /**
      * ================================================
@@ -265,7 +315,7 @@ public class ProjectService {
      * 1. Si el proyecto está 'published', cualquiera puede verlo.
      * 2. Si no está 'published', solo el autor puede verlo.
      *
-     * @param slug El slug del proyecto a verificar.
+     * @param slug     El slug del proyecto a verificar.
      * @param username El nombre del usuario autenticado (puede ser nulo si es anónimo).
      * @return true si el usuario tiene permiso, false en caso contrario.
      */
