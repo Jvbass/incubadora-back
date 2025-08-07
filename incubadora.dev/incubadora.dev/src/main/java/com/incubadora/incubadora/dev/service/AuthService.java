@@ -6,6 +6,7 @@ import com.incubadora.incubadora.dev.dto.RegisterRequest;
 import com.incubadora.incubadora.dev.entity.core.Role;
 import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.exception.UserException;
+import com.incubadora.incubadora.dev.mapper.AuthMapper;
 import com.incubadora.incubadora.dev.repository.RoleRepository;
 import com.incubadora.incubadora.dev.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,17 +26,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final AuthMapper authMapper;
 
     // Inyección de dependencias
     public AuthService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-                       JwtService jwtService, AuthenticationManager authenticationManager) {
+                       JwtService jwtService, AuthenticationManager authenticationManager, AuthMapper authMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.authMapper = authMapper;
     }
-
 
 
     /*Registro */
@@ -53,17 +55,13 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalStateException("El rol 'Desarrollador' no se encontró. Asegúrate de que exista en la BD."));
 
         // 3. Crear y guardar el nuevo usuario
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
+        User user = authMapper.toUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword())); // Hashear la contraseña
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
         user.setRole(userRole);
 
         userRepository.save(user);
 
-       // También añadimos el rol al token durante el registro para un inicio de sesión inmediato
+        // También añadimos el rol al token durante el registro para un inicio de sesión inmediato
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole().getName());
         extraClaims.put("userId", user.getId()); // Añadimos el ID del usuario para futuras referencias"
@@ -73,7 +71,7 @@ public class AuthService {
     }
 
 
-/*Login */
+    /*Login */
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
