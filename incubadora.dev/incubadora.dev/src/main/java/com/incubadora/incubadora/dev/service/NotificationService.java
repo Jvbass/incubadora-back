@@ -5,6 +5,7 @@ import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.entity.feedback.FeedbackProject;
 import com.incubadora.incubadora.dev.entity.common.Notification;
 import com.incubadora.incubadora.dev.exception.ResourceNotFoundException;
+import com.incubadora.incubadora.dev.mapper.NotificationMapper;
 import com.incubadora.incubadora.dev.repository.NotificationRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,10 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationMapper notificationMapper;
 
-    public NotificationService(NotificationRepository notificationRepository) {
+    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
+        this.notificationMapper = notificationMapper;
         this.notificationRepository = notificationRepository;
     }
 
@@ -45,9 +48,7 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public List<NotificationResponseDto> getNotificationsForUser(User user) {
         List<Notification> notifications = notificationRepository.findByRecipientIdOrderByCreatedAtDesc(user.getId());
-        return notifications.stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        return notificationMapper.toNotificationDtoList(notifications);
     }
 
     @Transactional
@@ -61,7 +62,7 @@ public class NotificationService {
 
         notification.setRead(true);
         Notification updatedNotification = notificationRepository.save(notification);
-        return mapToDto(updatedNotification);
+        return notificationMapper.toNotificationDto(updatedNotification);
     }
 
     @Transactional
@@ -74,39 +75,6 @@ public class NotificationService {
         unreadNotifications.forEach(notification -> notification.setRead(true));
         List<Notification> updatedNotifications = notificationRepository.saveAll(unreadNotifications);
 
-        return updatedNotifications.stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-    }
-
-    // --- MÉTODO HELPER DE MAPEO Y TIEMPO ---
-
-    private NotificationResponseDto mapToDto(Notification notification) {
-        NotificationResponseDto dto = new NotificationResponseDto();
-        dto.setId(notification.getId());
-        dto.setMessage(notification.getMessage());
-        dto.setLink(notification.getLink());
-        dto.setRead(notification.isRead());
-        dto.setCreatedAt(notification.getCreatedAt());
-        dto.setTimeAgo(calculateTimeAgo(notification.getCreatedAt()));
-        return dto;
-    }
-
-    private String calculateTimeAgo(Timestamp past) {
-        if (past == null) return "";
-        Duration duration = Duration.between(past.toInstant(), Instant.now());
-        long seconds = duration.getSeconds();
-
-        if (seconds < 60) return "hace un momento";
-        long minutes = seconds / 60;
-        if (minutes < 60) return String.format("hace %d minuto%s", minutes, minutes > 1 ? "s" : "");
-        long hours = minutes / 60;
-        if (hours < 24) return String.format("hace %d hora%s", hours, hours > 1 ? "s" : "");
-        long days = hours / 24;
-        if (days < 30) return String.format("hace %d día%s", days, days > 1 ? "s" : "");
-        long months = days / 30;
-        if (months < 12) return String.format("hace %d mes%s", months, months > 1 ? "es" : "");
-        long years = months / 12;
-        return String.format("hace %d año%s", years, years > 1 ? "s" : "");
+        return notificationMapper.toNotificationDtoList(updatedNotifications);
     }
 }

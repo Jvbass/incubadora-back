@@ -6,6 +6,7 @@ import com.incubadora.incubadora.dev.entity.common.Technology;
 import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.entity.project.Project;
 import com.incubadora.incubadora.dev.exception.ResourceNotFoundException;
+import com.incubadora.incubadora.dev.mapper.ProjectMapper;
 import com.incubadora.incubadora.dev.repository.ProjectRepository;
 import com.incubadora.incubadora.dev.repository.TechnologyRepository;
 import com.incubadora.incubadora.dev.repository.UserRepository;
@@ -36,10 +37,12 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final TechnologyRepository technologyRepository;
     private final SlugService slugService;
+    private final ProjectMapper projectMapper;
 
 
     public ProjectService(ProjectRepository projectRepository, UserRepository userRepository,
-                          TechnologyRepository technologyRepository, SlugService slugService) {
+                          TechnologyRepository technologyRepository, SlugService slugService, ProjectMapper projectMapper) {
+        this.projectMapper = projectMapper;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.technologyRepository = technologyRepository;
@@ -88,7 +91,7 @@ public class ProjectService {
         Project savedProject = projectRepository.save(newProject);
 
         // Mapea la entidad guardada a un DTO de respuesta y lo devuelve.
-        return mapToProjectResponseDto(savedProject);
+        return projectMapper.toProjectResponseDto(savedProject);
     }
 
 
@@ -131,7 +134,7 @@ public class ProjectService {
         Project savedProject = projectRepository.save(projectToUpdate);
 
         // 5. Mapear la entidad actualizada al DTO de respuesta y devolverlo.
-        return mapToProjectResponseDto(savedProject);
+        return projectMapper.toProjectResponseDto(savedProject);
     }
 
 
@@ -143,10 +146,9 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public List<ProjectSummaryDto> getProjectsByUsername(String username) {
         return projectRepository.findByDeveloper_Username(username).stream()
-                .map(this::mapToProjectSummaryDto)
+                .map(projectMapper::toProjectSummaryDto)
                 .collect(Collectors.toList());
     }
-
 
     /*======================================================*
      * Obtiene el detalle de un proyecto por su Slug
@@ -157,7 +159,7 @@ public class ProjectService {
     public ProjectResponseDto getProjectBySlug(String slug) {
         Project project = projectRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Proyecto no encontrado con slug: " + slug));
-        return mapToProjectResponseDto(project);
+        return projectMapper.toProjectResponseDto(project);
     }
 
 
@@ -172,7 +174,7 @@ public class ProjectService {
     public List<ProjectSummaryDto> getAllPublishedProjects() {
         // Usamos el nuevo método del repositorio para filtrar en la base de datos
         return projectRepository.findByStatus("published").stream()
-                .map(this::mapToProjectSummaryDto) // Mapeamos cada proyecto a su DTO
+                .map(projectMapper::toProjectSummaryDto) // Mapeamos cada proyecto a su DTO
                 .collect(Collectors.toList()); // Collectors.toList() convierte el Stream en una lista
     }
 
@@ -205,7 +207,7 @@ public class ProjectService {
         };
 
         List<ProjectSummaryDto> content = projectPage.getContent().stream()
-                .map(this::mapToProjectSummaryDto)
+                .map(projectMapper::toProjectSummaryDto)
                 .collect(Collectors.toList());
 
         return new PagedResponseDto<>(
@@ -230,62 +232,8 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public List<ProjectSummaryDto> getProjectsByUserId(Integer userId) {
         return projectRepository.findByDeveloper_Id(userId).stream()
-                .map(this::mapToProjectSummaryDto)
+                .map(projectMapper::toProjectSummaryDto)
                 .collect(Collectors.toList());
-    }
-
-
-    /**
-     * ======================================================*
-     * helper para mapear a DTO de proyectos resumidos
-     *
-     * @param project Entidad de proyecto a mapear
-     * @return ProjectSummaryDto con los datos del proyecto
-     * ======================================================
-     **/
-    private ProjectSummaryDto mapToProjectSummaryDto(Project project) {
-        ProjectSummaryDto dto = new ProjectSummaryDto();
-        dto.setId(project.getId());
-        dto.setSlug(project.getSlug());
-        dto.setTitle(project.getTitle());
-        dto.setDeveloperUsername(project.getDeveloper().getUsername());
-        dto.setCreatedAt(project.getCreatedAt());
-        dto.setStatus(project.getStatus());
-        dto.setIsCollaborative(project.getIsCollaborative());
-        dto.setNeedMentoring(project.getNeedMentoring());
-//        dto.setRepositoryUrl(project.getRepositoryUrl());
-        dto.setDevelopmentProgress(project.getDevelopmentProgress());
-
-        dto.setTechnologies(project.getTechnologies().stream()
-                .map(tech -> new TechnologyDto(tech.getId(), tech.getName(), tech.getTechColor()))
-                .collect(Collectors.toSet()));
-        return dto;
-    }
-
-
-    /*======================================================
-     * helper para mapear de Entidad a DTO
-     * ======================================================**/
-    private ProjectResponseDto mapToProjectResponseDto(Project project) {
-        ProjectResponseDto dto = new ProjectResponseDto();
-        dto.setId(project.getId());
-        dto.setSlug(project.getSlug());
-        dto.setTitle(project.getTitle());
-        dto.setDescription(project.getDescription());
-        dto.setRepositoryUrl(project.getRepositoryUrl());
-        dto.setProjectUrl(project.getProjectUrl());
-        dto.setCreatedAt(project.getCreatedAt());
-        dto.setDeveloperUsername(project.getDeveloper().getUsername());
-        dto.setStatus(project.getStatus());
-        dto.setIsCollaborative(project.getIsCollaborative());
-        dto.setNeedMentoring(project.getNeedMentoring());
-        dto.setDevelopmentProgress(project.getDevelopmentProgress());
-
-        dto.setTechnologies(project.getTechnologies().stream()
-                .map(tech -> new TechnologyDto(tech.getId(), tech.getName(), tech.getTechColor()))
-                .collect(Collectors.toSet()));
-
-        return dto;
     }
 
 

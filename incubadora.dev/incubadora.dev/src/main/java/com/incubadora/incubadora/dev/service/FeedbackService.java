@@ -7,6 +7,7 @@ import com.incubadora.incubadora.dev.entity.feedback.FeedbackProject;
 import com.incubadora.incubadora.dev.entity.project.Project;
 import com.incubadora.incubadora.dev.exception.OperationNotAllowedException;
 import com.incubadora.incubadora.dev.exception.ResourceNotFoundException;
+import com.incubadora.incubadora.dev.mapper.FeedbackMapper;
 import com.incubadora.incubadora.dev.repository.FeedbackProjectRepository;
 import com.incubadora.incubadora.dev.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,14 @@ public class FeedbackService {
     private final FeedbackProjectRepository feedbackRepository;
     private final ProjectRepository projectRepository;
     private final NotificationService notificationService;
+    private final FeedbackMapper feedbackMapper;
 
     public FeedbackService(FeedbackProjectRepository feedbackRepository, ProjectRepository projectRepository,
-                           NotificationService notificationService) {
+                           NotificationService notificationService, FeedbackMapper feedbackMapper) {
         this.feedbackRepository = feedbackRepository;
         this.projectRepository = projectRepository;
         this.notificationService = notificationService;
+        this.feedbackMapper = feedbackMapper;
     }
 
 
@@ -58,7 +61,7 @@ public class FeedbackService {
         // Crear notificación para el dueño del proyecto
         notificationService.createNotificationForNewFeedback(savedFeedback);
 
-        return mapToDto(savedFeedback);
+        return feedbackMapper.toFeedbackResponseDto(savedFeedback);
     }
 
 
@@ -75,9 +78,8 @@ public class FeedbackService {
         }
 
         // Usamos el ID del proyecto encontrado para buscar sus feedbacks
-        return feedbackRepository.findByProjectId(project.getId()).stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        List<FeedbackProject> feedbacks = feedbackRepository.findByProjectId(project.getId());
+        return feedbackMapper.toFeedbackResponseDtoList(feedbacks);
     }
 
 
@@ -93,7 +95,7 @@ public class FeedbackService {
         feedback.setFeedbackDescription(request.getFeedbackDescription());
         feedback.setRating(request.getRating());
         FeedbackProject updatedFeedback = feedbackRepository.save(feedback);
-        return mapToDto(updatedFeedback);
+        return feedbackMapper.toFeedbackResponseDto(updatedFeedback);
     }
 
 
@@ -119,18 +121,5 @@ public class FeedbackService {
             throw new OperationNotAllowedException("No tienes permiso para modificar este feedback.");
         }
         return feedback;
-    }
-
-    private FeedbackResponseDto mapToDto(FeedbackProject feedback) {
-        FeedbackResponseDto dto = new FeedbackResponseDto();
-        dto.setId(feedback.getId());
-        dto.setFeedbackDescription(feedback.getFeedbackDescription());
-        dto.setRating(feedback.getRating());
-        dto.setAuthorId(feedback.getAuthor().getId());
-        dto.setAuthor(feedback.getAuthor().getUsername());
-        dto.setProjectId(feedback.getProject().getId());
-        dto.setCreatedAt(feedback.getCreatedAt());
-        dto.setUpdatedAt(feedback.getUpdatedAt());
-        return dto;
     }
 }

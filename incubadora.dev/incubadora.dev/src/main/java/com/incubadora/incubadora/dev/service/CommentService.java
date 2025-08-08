@@ -8,6 +8,7 @@ import com.incubadora.incubadora.dev.entity.core.User;
 import com.incubadora.incubadora.dev.entity.feedback.Comment;
 import com.incubadora.incubadora.dev.entity.feedback.FeedbackProject;
 import com.incubadora.incubadora.dev.exception.ResourceNotFoundException;
+import com.incubadora.incubadora.dev.mapper.CommentMapper;
 import com.incubadora.incubadora.dev.repository.CommentRepository;
 import com.incubadora.incubadora.dev.repository.FeedbackProjectRepository;
 import com.incubadora.incubadora.dev.repository.UserRepository;
@@ -37,14 +38,16 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final FeedbackProjectRepository feedbackProjectRepository;
     private final UserRepository userRepository;
+    private final CommentMapper commentMapper;
 
     // Constructor para inyectar las dependencias de los repositorios
     public CommentService(CommentRepository commentRepository,
                           FeedbackProjectRepository feedbackProjectRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository, CommentMapper commentMapper) {
         this.commentRepository = commentRepository;
         this.feedbackProjectRepository = feedbackProjectRepository;
         this.userRepository = userRepository;
+        this.commentMapper = commentMapper;
     }
 
 
@@ -60,7 +63,7 @@ public class CommentService {
         }
         List<Comment> topLevelComments = commentRepository.findByFeedbackProjectIdAndParentCommentIsNullOrderByCreatedAtAsc(feedbackId);
         return topLevelComments.stream()
-                .map(this::mapEntityToDto)
+                .map(commentMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -84,11 +87,13 @@ public class CommentService {
                     .orElseThrow(() -> new ResourceNotFoundException("El comentario padre no fue encontrado con ID: " + request.getParentCommentId()));
         }
 
-        Comment newComment = new Comment(author, feedbackProject, request.getContent());
+        Comment newComment = commentMapper.toEntity(request);
+        newComment.setAuthor(author);
+        newComment.setFeedbackProject(feedbackProject);
         newComment.setParentComment(parentComment);
 
         Comment savedComment = commentRepository.save(newComment);
-        return mapEntityToDto(savedComment);
+        return commentMapper.toResponseDto(savedComment);
     }
 
     @Transactional
@@ -99,7 +104,7 @@ public class CommentService {
         // La autorización se delega a @PreAuthorize en el controlador.
         comment.setContent(request.getContent());
         Comment updatedComment = commentRepository.save(comment);
-        return mapEntityToDto(updatedComment);
+        return commentMapper.toResponseDto(updatedComment);
     }
 
     @Transactional
@@ -129,28 +134,4 @@ public class CommentService {
                 .orElse(false);
     }
 
-
-    /**
-     * ================================
-     * Helper para el mapeo de entidad a DTO.
-     * Convierte un objeto Comment a CommentResponseDto.
-     *
-     * @param comment Objeto Comment a convertir.
-     *                ================================
-     */
-
-    private CommentResponseDto mapEntityToDto(Comment comment) {
-        if (comment == null) return null;
-        CommentResponseDto dto = new CommentResponseDto();
-        dto.setId(comment.getId());
-        dto.setContent(comment.getContent());
-        dto.setAuthor(new AuthorDto(comment.getAuthor().getUsername()));
-        dto.setCreatedAt(comment.getCreatedAt());
-        dto.setReplies(
-                comment.getReplies().stream()
-                        .map(this::mapEntityToDto)
-                        .collect(Collectors.toList())
-        );
-        return dto;
-    }
 }
